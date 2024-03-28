@@ -29,7 +29,7 @@ class ser:
         oldTime = time.monotonic()
         print('inizio')
         i=6
-        while False:#self.msgs[0]!= 'xd':
+        while self.msgs[0]!= 'xd':
             if((i+0.05)>(time.monotonic()-oldTime)>(i-0.05)):
                 print('reset')
                 GPIO.output(21,GPIO.LOW)
