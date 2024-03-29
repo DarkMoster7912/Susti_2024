@@ -60,19 +60,19 @@ int main() {
             facingDirection-=(distances[3]>170 && distances[4]>170)?90:(distances[5]>100)?180:-90;
             sleep_ms(10);
             while(turning);
-            while(distances[0]<70 && !black && ((distances[0]>150 && distances[0]<400) || (distances[0]>570 && distances[0]!=765) || (distances[5]>0 && distances[5]<250 && distances[5]!=765)||(distances[0]==765 && distances[5]>300)))sleep_ms(10);
+            while(distances[0]>70 && !black && ((distances[0]>150 && distances[0]<400) || (distances[0]>570 && distances[0]!=765) || (distances[5]>0 && distances[5]<250 && distances[5]!=765)||(distances[0]==765 && distances[5]>300)))sleep_ms(10);
         }
         else if((distances[1]>170 && distances[2]>170)){
             facingDirection+=90;
             sleep_ms(10);
             while(turning);
-            while(distances[0]<70 && !black && ((distances[0]>150 && distances[0]<400) || (distances[0]>570 && distances[0]!=765) || (distances[5]>0 && distances[5]<250 && distances[5]!=765)||(distances[0]==765 && distances[5]>300)))sleep_ms(10);
+            while(distances[0]>70 && !black && ((distances[0]>150 && distances[0]<400) || (distances[0]>570 && distances[0]!=765) || (distances[5]>0 && distances[5]<250 && distances[5]!=765)||(distances[0]==765 && distances[5]>300)))sleep_ms(10);
         }
         else if((distances[0]<70)){
             facingDirection-=(distances[3]>170 && distances[4]>170)?90:180;
             sleep_ms(10);
             while(turning);
-            while(distances[0]<70 && !black && ((distances[0]>150 && distances[0]<400) || (distances[0]>570 && distances[0]!=765) || (distances[5]>0 && distances[5]<250 && distances[5]!=765)||(distances[0]==765 && distances[5]>300)))sleep_ms(10);
+            while(distances[0]>70 && !black && ((distances[0]>150 && distances[0]<400) || (distances[0]>570 && distances[0]!=765) || (distances[5]>0 && distances[5]<250 && distances[5]!=765)||(distances[0]==765 && distances[5]>300)))sleep_ms(10);
         }
 
         sleep_ms(50);
