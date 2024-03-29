@@ -1,0 +1,2 @@
+void initDevice();
+void resetDevice();
