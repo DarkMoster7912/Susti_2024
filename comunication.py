@@ -82,6 +82,22 @@ class ser:
             self.msgs[self.addresses.index(device.port)]=msg
     
     
+    def readAll(self):
+        msgs = ['g',0,0]
+        while True:
+            try:
+                msgs[0]=msgs[0] + PicoCon.readline().decode('utf-8').rstrip()
+            except Exception as e:
+                pass
+            try:
+                msgs[1]=CamCons[0].readline().decode('utf-8').rstrip()
+            except:
+                pass
+            try:
+                msgs[2]=CamCons[1].readline().decode('utf-8').rstrip()
+            except:
+                pass
+            if msgs[0].count
             
     def victim(self,senso,nk):
         self.write('g0')
