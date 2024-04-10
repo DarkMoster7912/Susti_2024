@@ -11,6 +11,7 @@ maze_height = config.HEIGHT #config maze height
 tile_size = config.TILE_SIZE    #config tile size
 
 tx = Queue()    #init tx queue
+tx1 = Queue()
 rx = Queue()    #init rx queue
 lack = Queue()  #init lack queue
 
@@ -100,7 +101,8 @@ class Maze:
         self.path = []  #put in a list path
         self.silver = 0 #Mark how silver found
         self.from_silver = 0    #Mark how Cell there are from last silver Cell
-        self.restart = self.grid_cells[18+18*self.cols] #Restart in case of lack of progress
+        self.restart = self.grid_cells[18+18*self.cols] #Restart in case of lack of progress and univisited silver Cell
+        self.direction = 0
 
     '''def draw_current_cell(self):
         cur_x = self.current_cell.x*self.tile_size
@@ -116,25 +118,27 @@ class Maze:
             cell.draw_cell()'''
     
     def Tremaux(self):
-        [self.current_cell.color, self.current_cell.walls] = self.read_queue(self.current_cell) #read of queue list
+        self.read_queue(self.current_cell) #read of queue list
         self.path.append(self.current_cell) #append start cell in path
         while not self.is_exit(self.current_cell): #While is not exit
             unvisited_neighbors = self.get_unvisited_neighbors(self.current_cell) #take univisited neighbors
             print(self.current_cell.x, self.current_cell.y) #print current Cell
             if unvisited_neighbors: #If there are univisited neighbors
-                next_cell = random.choice(unvisited_neighbors) #Choose a random univisited Cell
-                tx.put(self.get_direction(next_cell, self.current_cell)) #Put in queue direction
-                print(self.get_direction(next_cell, self.current_cell)) #print direction
-                self.visited_stack.append(next_cell) #put in visited stack next Cell
-                self.current_cell.visited = True #Mark as visited current Cell
-                self.path.append(next_cell) #Append in path next cell
-                self.current_cell = next_cell #current cell becomes next cell
-                #item = get_input()
-                #rx.put(item)
+                tx1.put(0)#Guidance disable
+                #next_cell = random.choice(unvisited_neighbors) #Choose a random univisited Cell
+                #tx.put(self.get_direction(next_cell, self.current_cell)) #Put in queue direction
+                #print(self.get_direction(next_cell, self.current_cell)) #print direction
                 while rx.empty(): #Wait until queue is not empty
                     pass
-                [self.current_cell.color, self.current_cell.walls] = self.read_queue(self.current_cell) #read of queue list
-                self.black_control(self.get_direction(next_cell, self.current_cell)) #Black control
+                self.read_queue(self.current_cell) #read of queue list
+                self.current_cell = self.next_cell()
+                self.visited_stack.append(self.current_cell) #put in visited stack next Cell
+                self.current_cell.visited = True #Mark as visited current Cell
+                self.path.append(self.current_cell) #Append in path next cell
+                #self.current_cell = next_cell #current cell becomes next cell
+                #item = get_input()
+                #rx.put(item)
+                self.black_control() #Black control
                 self.silver_control()   #silver control
                 if self.lack_control(): #lack control
                     self.got_lack() #if lack = True
@@ -142,6 +146,7 @@ class Maze:
                 #self.draw_maze()
                 #self.draw_current_cell()
             else: #If not univisited neighbors
+                tx1.put(1)#Guidance enabled
                 self.path.pop() #pop from path current cell
                 if not self.path:
                     print('no path') #if here returned Start Cell (maybe)
@@ -162,6 +167,17 @@ class Maze:
         if next_node.x == current_node.x - 1 and next_node.y == current_node.y:
             direction = 3
         return direction
+    
+    def next_cell(self):
+        match self.direction:
+            case 0:
+                return self.grid_cells[self.current_cell.x + (self.current_cell.y - 1)*self.cols]
+            case 1:
+                return self.grid_cells[(self.current_cell.x + 1) + self.current_cell.y*self.cols]
+            case 2:
+                return self.grid_cells[self.current_cell.x + (self.current_cell.y + 1)*self.cols]
+            case 3:
+                return self.grid_cells[(self.current_cell.x - 1) + self.current_cell.y*self.cols]
 
     def get_unvisited_neighbors(self, cell):
         def get_valid_neighbors():
@@ -195,66 +211,65 @@ class Maze:
     def is_exit(self, cell):
         return cell.x == self.cols and cell.y-1 == self.rows-1
     
-    def read_queue(self, current_cell):
+    def read_queue(self):
         queue = []
         queue = rx.get()
-        direction = queue[6]
+        self.direction = queue[6]
         #direction's control
-        match direction:
+        match self.direction:
             case 0: 
                 if queue[0] == 0:
-                    current_cell.walls['right'] = False
+                    self.current_cell.walls['right'] = False
                 if queue[1] == 0:
-                    current_cell.walls['left'] = False
+                    self.current_cell.walls['left'] = False
                 if queue[2] == 0:
-                    current_cell.walls['top'] = False
+                    self.current_cell.walls['top'] = False
                 if queue[3] == 0:
-                    current_cell.walls['bottom'] = False
+                    self.current_cell.walls['bottom'] = False
             case 1:
                 if queue[0] == 0:
-                    current_cell.walls['bottom'] = False
+                    self.current_cell.walls['bottom'] = False
                 if queue[1] == 0:
-                    current_cell.walls['top'] = False
+                    self.current_cell.walls['top'] = False
                 if queue[2] == 0:
-                    current_cell.walls['right'] = False
+                    self.current_cell.walls['right'] = False
                 if queue[3] == 0:
-                    current_cell.walls['left'] = False
+                    self.current_cell.walls['left'] = False
             case 2:
                 if queue[0] == 0:
-                    current_cell.walls['left'] = False
+                    self.current_cell.walls['left'] = False
                 if queue[1] == 0:
-                    current_cell.walls['right'] = False
+                    self.current_cell.walls['right'] = False
                 if queue[2] == 0:
-                    current_cell.walls['bottom'] = False
+                    self.current_cell.walls['bottom'] = False
                 if queue[3] == 0:
-                    current_cell.walls['top'] = False
+                    self.current_cell.walls['top'] = False
             case 3:
                 if queue[0] == 0:
-                    current_cell.walls['top'] = False
+                    self.current_cell.walls['top'] = False
                 if queue[1] == 0:
-                    current_cell.walls['bottom'] = False
+                    self.current_cell.walls['bottom'] = False
                 if queue[2] == 0:
-                    current_cell.walls['left'] = False
+                    self.current_cell.walls['left'] = False
                 if queue[3] == 0:
-                    current_cell.walls['right'] = False
+                    self.current_cell.walls['right'] = False
         #color's control
         match queue[4]:
             case 'white':
-                current_cell.color = 'white'
+                self.current_cell.color = 'white'
             case 'black':
-                current_cell.color = 'black'
+                self.current_cell.color = 'black'
             case 'blue':
-                current_cell.color = 'blue'
+                self.current_cell.color = 'blue'
             case 'silver':
-                current_cell.color = 'silver'
+                self.current_cell.color = 'silver'
         #victim's control
         if queue[5] == True:
             self.current_cell.victim = True
         else:
             self.current_cell.victim = False
-        return [current_cell.color, current_cell.walls]
     
-    def black_control(self, direction):
+    def black_control(self):
         if self.current_cell.color == 'black': #If current Cell put all 4 walls in that Cell
             self.current_cell.walls['top'] = True
             self.current_cell.walls['right'] = True
@@ -264,7 +279,7 @@ class Maze:
             self.visited_stack.append(self.current_cell)
             self.path.pop()
             self.current_cell = self.path[-1] #current Cell becomes Black's Previous Cell
-            match direction: #Put a wall in Black direction
+            match self.direction: #Put a wall in Black direction
                 case 0:
                     self.current_cell.walls['top'] = True
                 case 1:
